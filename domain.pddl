@@ -23,24 +23,26 @@
         (hero-at ?loc - location)
 
         ; IMPLEMENT ME
+        ; Additional predicates for hero properties
+        (holding-key ?k - key)
+        (arm-free)
+        
+        ; Defining predicates for corridor and room properties 
         (corridor-connected ?cor - corridor ?to - location)
         (corridor-collapsed ?cor - corridor)
         (corridor-locked ?cor - corridor)
         (risky-corridor ?cor - corridor)
-
-        (lock-colour ?cor - corridor ?col - colour)
         (messy ?loc - location)
-        
-        (holding-key ?k - key)
-        (arm-free)
-        (key-at-loc ?k - key ?loc - location)
-        
+
+        ; Defining predicates for keys and locks
+        (lock-colour ?cor - corridor ?col - colour)
         (key-colour ?k - key ?col - colour)
         (one-use-key ?key - key)
         (two-use-key ?key - key)
         (multi-use-key ?key - key)
         (key-used-up ?key - key)
-        
+        (key-at-loc ?k - key ?loc - location)
+
     )
 
     ; IMPORTANT: You should not change/add/remove the action names or parameters
@@ -58,18 +60,26 @@
         :precondition (and
 
             ; IMPLEMENT ME
+            ; Check hero and location to ensure valid locations
             (hero-at ?from)
+            (not(= ?from ?to))
+            
+            ; Check that the corridor connects to and from
             (corridor-connected ?cor ?from)
             (corridor-connected ?cor ?to)
+            
+            ; Check corridor is valid to be passed through (i.e. not collapsed, locked)
             (not(corridor-collapsed ?cor))
             (not(corridor-locked ?cor))
-            (not(= ?from ?to))
         )
         :effect (and
 
             ; IMPLEMENT ME
+            ; Update hero locations
             (hero-at ?to)
             (not(hero-at ?from))
+            
+            ; Collapses corridor and makes end location messy if the corridor is risky
             (when(risky-corridor ?cor)(and(messy ?to)(corridor-collapsed ?cor)))
         )
     )
@@ -87,19 +97,25 @@
         :precondition (and
 
             ; IMPLEMENT ME
+            ; Check hero ability to pick up a key
             (hero-at ?loc)
-            (key-at-loc ?k ?loc)
-            (not(holding-key ?k))
             (not(messy ?loc))
             (arm-free)
+            (not(holding-key ?k))
+            
+            ; Check key location
+            (key-at-loc ?k ?loc)
         )
 
         :effect (and
 
             ; IMPLEMENT ME
+            ; Update hero properties
             (holding-key ?k)
-            (not(key-at-loc ?k ?loc))
             (not(arm-free))
+
+            ; Update key location properties
+            (not(key-at-loc ?k ?loc))
         )
     )
 
@@ -114,6 +130,7 @@
         :precondition (and
 
             ; IMPLEMENT ME
+            ; Check hero ability to drop a key
             (holding-key ?k)
             (hero-at ?loc)
             (not(arm-free))
@@ -122,9 +139,12 @@
         :effect (and
 
             ; IMPLEMENT ME
+            ; Update hero properties
             (not(holding-key ?k))
-            (key-at-loc ?k ?loc)
             (arm-free)
+            
+            ; Update hero properties
+            (key-at-loc ?k ?loc)
         )
     )
 
@@ -144,18 +164,26 @@
         :precondition (and
 
             ; IMPLEMENT ME
+            ; Check hero ability to unlock a lock
             (holding-key ?k)
+            (hero-at ?loc)
+
+            ; Check key/lock agreement
             (not(key-used-up ?k))
             (corridor-locked ?cor)
             (lock-colour ?cor ?col)
             (key-colour ?k ?col)
-            (hero-at ?loc)
+            
+            ; Check corridor connection to current location
             (corridor-connected ?cor ?loc)
         )
 
         :effect (and
             ; IMPLEMENT ME
+            ; Update corridor lock
             (not(corridor-locked ?cor))
+            
+            ; Update key use properties
             (when(two-use-key ?k)(and(one-use-key ?k)(not(two-use-key ?k))))
             (when(one-use-key ?k)(and(key-used-up ?k)(not(one-use-key ?k))))
         )
@@ -172,6 +200,7 @@
         :precondition (and
 
             ; IMPLEMENT ME
+            ; Check hero and room properties
             (hero-at ?loc)
             (messy ?loc)
         )
@@ -179,6 +208,7 @@
         :effect (and
 
             ; IMPLEMENT ME
+            ; Update room property
             (not(messy ?loc))
         )
     )
